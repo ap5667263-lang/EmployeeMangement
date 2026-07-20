@@ -20,8 +20,21 @@ const checkOutSchema = Joi.object({
         .allow("")
         .optional(),
 });
+const updateAttendanceSchema = Joi.object({
+    checkIn: Joi.date().optional(),
 
+    checkOut: Joi.date().optional(),
+
+    status: Joi.string()
+        .valid("Present", "Absent", "Half-Day", "Leave")
+        .optional(),
+
+    remarks: Joi.string()
+        .allow("")
+        .optional(),
+});
 module.exports = {
     checkInSchema,
     checkOutSchema,
+    updateAttendanceSchema
 };

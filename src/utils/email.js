@@ -48,5 +48,28 @@ const sendLoginOtpEmail = async (email, otp) => {
         `,
     });
 };
+const sendSalarySlipEmail = async (email, pdfBuffer) => {
+    await transporter.sendMail({
+        from: `"Employee Management" <${process.env.EMAIL}>`,
+        to: email,
+        subject: "Salary Slip",
+        html: `
+            <h2>Salary Slip</h2>
+            <p>Your salary slip is attached with this email.</p>
+        `,
+        attachments: [
+            {
+                filename: "SalarySlip.pdf",
+                content: pdfBuffer,
+            },
+        ],
+    });
+};
 
-module.exports = { sendVerificationEmail, sendLoginOtpEmail };
+module.exports = {
+    sendVerificationEmail,
+    sendLoginOtpEmail,
+    sendSalarySlipEmail,
+};
+
+

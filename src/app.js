@@ -7,6 +7,10 @@ const securityMiddleware = require("./middleware/security.middleware");
 const authRouter = require("./routers/auth.rout");
 const employeeRouter = require("./routers/empolyee.rout");
 const attendanceRouter = require("./routers/attendance.rout");
+const leaveRouter = require("./routers/leave.rout");
+const payrollRouter = require("./routers/payroll.rout");
+const performanceRouter = require("./routers/performance.rout");
+const salarySlipRouter = require("./routers/saliaryslip.rout");
 const path = require("path");
 
 const app = express();
@@ -38,6 +42,10 @@ app.use("/api/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.use("/api/auth", authRouter);
 app.use("/api/employees", employeeRouter);
 app.use("/api/attendance", attendanceRouter);
+app.use("/api/leave", leaveRouter);
+app.use("/api/payroll", payrollRouter);
+app.use("/api/performance", performanceRouter);
+app.use("/api/salary-slip", salarySlipRouter);
 app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
 
 // Multer error handler
