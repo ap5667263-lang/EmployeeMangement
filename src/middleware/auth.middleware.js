@@ -6,10 +6,13 @@ const sessionModel = require("../model/session.model");
 const protect = async (req, res, next) => {
     try {
         const authHeader = req.headers.authorization;
-        const token = authHeader?.startsWith("Bearer ") ? authHeader.split(" ")[1] : null;
+        const headerToken = authHeader?.startsWith("Bearer ") ? authHeader.split(" ")[1] : null;
+        const cookieToken = req.cookies?.accessToken || req.cookies?.token || req.cookies?.authToken || null;
+        const queryToken = req.query?.token || null;
+        const token = headerToken || cookieToken || queryToken;
 
         if (!token) {
-            return res.status(401).json({ message: "Access token not found" });
+            return res.status(401).json({ message: "Access token not found in header, cookie, or query" });
         }
 
         const decoded = jwt.verify(token, config.JWT_SECRET);

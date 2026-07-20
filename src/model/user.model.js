@@ -31,7 +31,7 @@ const userSchema = new mongoose.Schema(
             enum: ["user", "manager", "admin"],
             default: "user",
         },
-
+       
         isEmailVerified: {
             type: Boolean,
             default: false,
@@ -40,6 +40,16 @@ const userSchema = new mongoose.Schema(
         verificationToken: {
             type: String,
             default: "",
+        },
+
+        loginOtp: {
+            type: String,
+            default: null,
+        },
+
+        loginOtpExpires: {
+            type: Date,
+            default: null,
         },
     },
     {

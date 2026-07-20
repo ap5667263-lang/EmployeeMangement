@@ -5,8 +5,8 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const generateToken = require("../utils/generateToken");
 const config = require("../config/config");
-const { sendVerificationEmail } = require("../utils/email");
-
+const { sendVerificationEmail, sendLoginOtpEmail } = require("../utils/email");
+const uploadIamge = require("../utils/uploadImage");
 const passwordResetTokens = new Map();
 
 async function register(req, res) {
@@ -24,14 +24,16 @@ async function register(req, res) {
         }
 
         const hashedPassword = await bcrypt.hash(password, 10);
-
         const verificationToken = crypto.randomBytes(20).toString("hex");
+
+        // Image upload — file ho toh upload, warna default
+        const { url: profileImage } = await uploadIamge(req.file);
 
         const user = await userModel.create({
             username,
             email,
             password: hashedPassword,
-            profileImage: config.DEFAULT_PROFILE_IMAGE,
+            profileImage,
             role: role || "user",
             verificationToken,
         });
@@ -106,6 +108,55 @@ async function login(req, res) {
             });
         }
 
+        // OTP generate karo — 6 digit
+        const otp = Math.floor(100000 + Math.random() * 900000).toString();
+        const otpExpires = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+
+        user.loginOtp = otp;
+        user.loginOtpExpires = otpExpires;
+        await user.save();
+
+        // OTP email bhejo
+        await sendLoginOtpEmail(email, otp);
+
+        return res.status(200).json({
+            message: "OTP sent to your email. Please verify to complete login.",
+            email,
+        });
+
+    } catch (err) {
+        return res.status(500).json({
+            message: "Internal Server Error",
+            error: err.message,
+        });
+    }
+}
+
+async function verifyOtp(req, res) {
+    try {
+        const { email, otp } = req.body;
+
+        const user = await userModel.findOne({ email });
+
+        if (!user) {
+            return res.status(401).json({ message: "User not found" });
+        }
+
+        // OTP check karo
+        if (!user.loginOtp || user.loginOtp !== otp) {
+            return res.status(401).json({ message: "Invalid OTP" });
+        }
+
+        // OTP expire check
+        if (user.loginOtpExpires < new Date()) {
+            return res.status(401).json({ message: "OTP has expired" });
+        }
+
+        // OTP clear karo
+        user.loginOtp = null;
+        user.loginOtpExpires = null;
+        await user.save();
+
         // Session create karo
         const session = await sessionModel.create({
             userId: user._id,
@@ -116,16 +167,15 @@ async function login(req, res) {
 
         const { accessToken, refreshToken } = generateToken(user._id, session._id);
 
-        // refreshToken ka hash session mai save karo
         const refreshTokenHash = crypto.createHash("sha256").update(refreshToken).digest("hex");
         session.refreshTokenHash = refreshTokenHash;
         await session.save();
 
         res.cookie("refreshToken", refreshToken, {
             httpOnly: true,
-            secure: false,          // Production mai true karna (HTTPS)
+            secure: false,
             sameSite: "strict",
-            maxAge: 7 * 24 * 60 * 60 * 1000,  // 7 days
+            maxAge: 7 * 24 * 60 * 60 * 1000,
         });
 
         return res.status(200).json({
@@ -136,6 +186,7 @@ async function login(req, res) {
                 username: user.username,
                 email: user.email,
                 role: user.role,
+                profileImage: user.profileImage,
             },
         });
 
@@ -276,15 +327,23 @@ async function logout(req, res) {
 async function updateProfile(req, res) {
     try {
         const user = req.user;
-        const { username, email, profileImage } = req.body;
+        const { username, email } = req.body;
 
         if (username) user.username = username;
         if (email) user.email = email;
-        if (profileImage) user.profileImage = profileImage;
+
+        if (req.file) {
+            try {
+                const { url } = await uploadIamge(req.file);
+                user.profileImage = url;
+            } catch (imagekitErr) {
+                console.warn("ImageKit upload failed:", imagekitErr.message);
+            }
+        }
 
         await user.save();
 
-        res.status(200).json({
+        return res.status(200).json({
             message: "Profile updated successfully",
             user: {
                 id: user._id,
@@ -294,8 +353,13 @@ async function updateProfile(req, res) {
                 role: user.role,
             },
         });
+
     } catch (err) {
-        res.status(500).json({ message: "Internal Server Error", error: err.message });
+        console.error("Update Profile Error:", err);
+        return res.status(500).json({
+            message: "Internal Server Error",
+            error: err.message,
+        });
     }
 }
 
@@ -404,6 +468,7 @@ module.exports = {
     register,
     getMe,
     login,
+    verifyOtp,
     refreshToken,
     logout,
     updateProfile,

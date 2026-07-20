@@ -5,6 +5,7 @@ const swaggerUi = require("swagger-ui-express");
 const swaggerJsdoc = require("swagger-jsdoc");
 const securityMiddleware = require("./middleware/security.middleware");
 const authRouter = require("./routers/auth.rout");
+const path = require("path");
 
 const app = express();
 
@@ -33,6 +34,7 @@ app.use(cookieParser());
 
 app.use("/api/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.use("/api/auth", authRouter);
+app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
 
 // Multer error handler
 app.use((err, req, res, next) => {

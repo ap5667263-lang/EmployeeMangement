@@ -15,8 +15,9 @@ const {
 
 const authRouter = Router();
 
-authRouter.post("/register", validate(registerSchema), authController.register);
+authRouter.post("/register", upload.single("profileImage"), validate(registerSchema), authController.register);
 authRouter.post("/login", validate(loginSchema), authController.login);
+authRouter.post("/verify-otp", authController.verifyOtp);
 authRouter.get("/me", protect, authController.getMe);
 authRouter.put("/profile", protect, upload.single("image"), validate(updateProfileSchema), authController.updateProfile);
 authRouter.post("/change-password", protect, validate(changePasswordSchema), authController.changePassword);
