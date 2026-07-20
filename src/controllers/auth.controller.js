@@ -6,7 +6,7 @@ const jwt = require("jsonwebtoken");
 const generateToken = require("../utils/generateToken");
 const config = require("../config/config");
 const { sendVerificationEmail, sendLoginOtpEmail } = require("../utils/email");
-const uploadIamge = require("../utils/uploadImage");
+const uploadImage = require("../utils/uploadImage");
 const passwordResetTokens = new Map();
 
 async function register(req, res) {
@@ -27,7 +27,7 @@ async function register(req, res) {
         const verificationToken = crypto.randomBytes(20).toString("hex");
 
         // Image upload — file ho toh upload, warna default
-        const { url: profileImage } = await uploadIamge(req.file);
+        const { url: profileImage } = await uploadImage(req.file);
 
         const user = await userModel.create({
             username,
@@ -334,7 +334,7 @@ async function updateProfile(req, res) {
 
         if (req.file) {
             try {
-                const { url } = await uploadIamge(req.file);
+                const { url } = await uploadImage(req.file);
                 user.profileImage = url;
             } catch (imagekitErr) {
                 console.warn("ImageKit upload failed:", imagekitErr.message);
