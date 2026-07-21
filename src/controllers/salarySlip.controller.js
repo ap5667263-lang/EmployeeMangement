@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
-const salarySlipModel = require("../model/saliaryslip.model");
+const salarySlipModel = require("../model/salarySlip.model");
 const payrollModel = require("../model/payroll.model");
-const generateSalarySlipPdf = require("../utils/saliaryslipgenreator");
+const generateSalarySlipPdf = require("../utils/salarySlipGenerator");
 
 const generateSalarySlip = async (req, res) => {
     try {

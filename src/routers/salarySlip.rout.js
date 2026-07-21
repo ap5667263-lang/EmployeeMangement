@@ -1,9 +1,9 @@
 const { Router } = require("express");
-const salarySlipController = require("../controllers/saliaryslip.controller");
+const salarySlipController = require("../controllers/salarySlip.controller");
 const protect = require("../middleware/auth.middleware");
 const authorizeRoles = require("../middleware/role.middleware");
 const validate = require("../middleware/validate.middleware");
-const { sendSalarySlipSchema } = require("../utils/saliaryslip.validator");
+const { sendSalarySlipSchema } = require("../utils/salarySlip.validator");
 
 const salarySlipRouter = Router();
 

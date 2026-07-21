@@ -5,12 +5,12 @@ const swaggerUi = require("swagger-ui-express");
 const swaggerJsdoc = require("swagger-jsdoc");
 const securityMiddleware = require("./middleware/security.middleware");
 const authRouter = require("./routers/auth.rout");
-const employeeRouter = require("./routers/empolyee.rout");
+const employeeRouter = require("./routers/employee.rout");
 const attendanceRouter = require("./routers/attendance.rout");
 const leaveRouter = require("./routers/leave.rout");
 const payrollRouter = require("./routers/payroll.rout");
 const performanceRouter = require("./routers/performance.rout");
-const salarySlipRouter = require("./routers/saliaryslip.rout");
+const salarySlipRouter = require("./routers/salarySlip.rout");
 const path = require("path");
 
 const app = express();
