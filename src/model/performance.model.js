@@ -62,7 +62,9 @@ const performanceSchema = new mongoose.Schema({
 });
 
 
-module.exports = mongoose.model(
+const performanceModel = mongoose.model(
     "Performance",
     performanceSchema
 );
+
+module.exports = performanceModel;

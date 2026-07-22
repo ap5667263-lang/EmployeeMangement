@@ -8,7 +8,7 @@ const { createEmployeeSchema, updateEmployeeSchema } = require("../utils/employe
 
 const employeeRouter = Router();
 
-employeeRouter.post("/createEmpoyee", protect, authorizeRoles("admin"), upload.single("profileImage"), validate(createEmployeeSchema), employeeController.createEmployee);
+employeeRouter.post("/createEmployee", protect, authorizeRoles("admin"), upload.single("profileImage"), validate(createEmployeeSchema), employeeController.createEmployee);
 employeeRouter.get("/get", protect, authorizeRoles("admin"), employeeController.getAllEmployees);
 employeeRouter.get("/:id", protect, authorizeRoles("admin"), employeeController.getEmployeeById);
 employeeRouter.put("/:id", protect, authorizeRoles("admin"), upload.single("profileImage"), validate(updateEmployeeSchema), employeeController.updateEmployee);

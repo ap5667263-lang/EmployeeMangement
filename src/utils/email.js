@@ -48,6 +48,25 @@ const sendLoginOtpEmail = async (email, otp) => {
         `,
     });
 };
+const sendForgotPasswordOtpEmail = async (email, otp) => {
+    await transporter.sendMail({
+        from: `"Employee Management" <${process.env.EMAIL}>`,
+        to: email,
+        subject: "Password Reset OTP",
+        html: `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 8px;">
+                <h2 style="color: #2563eb;">Password Reset OTP</h2>
+                <p>You requested a password reset. Use the OTP below:</p>
+                <div style="font-size: 36px; font-weight: bold; letter-spacing: 8px; color: #111827; text-align: center; padding: 20px; background: #f3f4f6; border-radius: 8px; margin: 16px 0;">
+                    ${otp}
+                </div>
+                <p style="color: #6b7280; font-size: 13px;">This OTP expires in 10 minutes.</p>
+                <p style="color: #6b7280; font-size: 13px;">If you did not request this, please ignore this email.</p>
+            </div>
+        `,
+    });
+};
+
 const sendSalarySlipEmail = async (email, pdfBuffer) => {
     await transporter.sendMail({
         from: `"Employee Management" <${process.env.EMAIL}>`,
@@ -69,6 +88,7 @@ const sendSalarySlipEmail = async (email, pdfBuffer) => {
 module.exports = {
     sendVerificationEmail,
     sendLoginOtpEmail,
+    sendForgotPasswordOtpEmail,
     sendSalarySlipEmail,
 };
 

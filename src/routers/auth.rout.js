@@ -10,7 +10,6 @@ const {
     updateProfileSchema,
     changePasswordSchema,
     forgotPasswordSchema,
-    resetPasswordSchema,
 } = require("../utils/validators");
 
 const authRouter = Router();
@@ -22,7 +21,7 @@ authRouter.get("/me", protect, authController.getMe);
 authRouter.put("/profile", protect, upload.single("image"), validate(updateProfileSchema), authController.updateProfile);
 authRouter.post("/change-password", protect, validate(changePasswordSchema), authController.changePassword);
 authRouter.post("/forgot-password", validate(forgotPasswordSchema), authController.forgotPassword);
-authRouter.post("/reset-password", validate(resetPasswordSchema), authController.resetPassword);
+authRouter.post("/verify-forgot-otp", authController.verifyForgotOtp);
 authRouter.get("/sessions", protect, authController.listSessions);
 authRouter.post("/logout-all", protect, authController.logoutAll);
 authRouter.get("/verify-email/:token", authController.verifyEmail);

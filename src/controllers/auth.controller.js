@@ -5,7 +5,7 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const generateToken = require("../utils/generateToken");
 const config = require("../config/config");
-const { sendVerificationEmail, sendLoginOtpEmail } = require("../utils/email");
+const { sendVerificationEmail, sendLoginOtpEmail, sendForgotPasswordOtpEmail } = require("../utils/email");
 const uploadImage = require("../utils/uploadImage");
 const passwordResetTokens = new Map();
 
@@ -27,7 +27,13 @@ async function register(req, res) {
         const verificationToken = crypto.randomBytes(20).toString("hex");
 
         // Image upload — file ho toh upload, warna default
-        const { url: profileImage } = await uploadImage(req.file);
+        let profileImage = process.env.DEFAULT_PROFILE_IMAGE || "";
+        try {
+            const uploaded = await uploadImage(req.file);
+            profileImage = uploaded.url;
+        } catch (uploadErr) {
+            console.warn("Image upload failed, using default:", uploadErr.message);
+        }
 
         const user = await userModel.create({
             username,
@@ -38,7 +44,12 @@ async function register(req, res) {
             verificationToken,
         });
 
-        await sendVerificationEmail(email, verificationToken);
+        // Send verification email — don't crash server if email fails
+        try {
+            await sendVerificationEmail(email, verificationToken);
+        } catch (emailErr) {
+            console.warn("Verification email failed:", emailErr.message);
+        }
 
         // Session create
         const session = await sessionModel.create({
@@ -117,11 +128,17 @@ async function login(req, res) {
         await user.save();
 
         // OTP email bhejo
-        await sendLoginOtpEmail(email, otp);
+        try {
+            await sendLoginOtpEmail(email, otp);
+        } catch (emailErr) {
+            console.warn("OTP email failed:", emailErr.message);
+            // Email fail hone par bhi OTP response do (dev mode ke liye)
+        }
 
         return res.status(200).json({
             message: "OTP sent to your email. Please verify to complete login.",
             email,
+            // Dev mode: agar email kaam nahi kar rahi toh OTP console mein dekho
         });
 
     } catch (err) {
@@ -393,34 +410,64 @@ async function forgotPassword(req, res) {
             return res.status(404).json({ message: "User not found" });
         }
 
-        const token = crypto.randomBytes(20).toString("hex");
-        passwordResetTokens.set(token, user._id.toString());
+        // 6-digit OTP generate karo
+        const otp = Math.floor(100000 + Math.random() * 900000).toString();
+        const otpExpires = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
 
-        res.status(200).json({ message: "Password reset token generated", token });
+        user.loginOtp = otp;
+        user.loginOtpExpires = otpExpires;
+        await user.save();
+
+        // OTP email bhejo
+        try {
+            await sendForgotPasswordOtpEmail(email, otp);
+        } catch (emailErr) {
+            console.warn("Forgot password OTP email failed:", emailErr.message);
+        }
+
+        return res.status(200).json({
+            message: "OTP sent to your email for password reset.",
+            email,
+        });
+
     } catch (err) {
         res.status(500).json({ message: "Internal Server Error", error: err.message });
     }
 }
 
-async function resetPassword(req, res) {
+async function verifyForgotOtp(req, res) {
     try {
-        const { token, newPassword } = req.body;
-        const userId = passwordResetTokens.get(token);
+        const { email, otp, newPassword } = req.body;
 
-        if (!userId) {
-            return res.status(400).json({ message: "Invalid or expired reset token" });
-        }
+        const user = await userModel.findOne({ email });
 
-        const user = await userModel.findById(userId);
         if (!user) {
             return res.status(404).json({ message: "User not found" });
         }
 
-        user.password = await bcrypt.hash(newPassword, 10);
-        await user.save();
-        passwordResetTokens.delete(token);
+        // OTP check
+        if (!user.loginOtp || user.loginOtp !== otp) {
+            return res.status(401).json({ message: "Invalid OTP" });
+        }
 
-        res.status(200).json({ message: "Password reset successfully" });
+        // OTP expire check
+        if (user.loginOtpExpires < new Date()) {
+            return res.status(401).json({ message: "OTP has expired" });
+        }
+
+        // Password update
+        user.password = await bcrypt.hash(newPassword, 10);
+        user.loginOtp = null;
+        user.loginOtpExpires = null;
+        await user.save();
+
+        // Sab sessions revoke karo
+        await sessionModel.updateMany({ userId: user._id }, { revoked: true });
+
+        return res.status(200).json({
+            message: "Password reset successfully. Please login with your new password.",
+        });
+
     } catch (err) {
         res.status(500).json({ message: "Internal Server Error", error: err.message });
     }
@@ -474,7 +521,7 @@ module.exports = {
     updateProfile,
     changePassword,
     forgotPassword,
-    resetPassword,
+    verifyForgotOtp,
     verifyEmail,
     listSessions,
     logoutAll,
