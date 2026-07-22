@@ -1,0 +1,223 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  background: #f4f7fb;
+}
+
+.register {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+
+  &__card {
+    width: 100%;
+    max-width: 480px;
+    background: #ffffff;
+    padding: 40px;
+    border-radius: 16px;
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.08);
+  }
+
+  &__title {
+    text-align: center;
+    font-size: 28px;
+    font-weight: 700;
+    color: #1f2937;
+    margin-bottom: 6px;
+  }
+
+  &__subtitle {
+    text-align: center;
+    color: #6b7280;
+    font-size: 15px;
+    margin-bottom: 24px;
+  }
+
+  &__alert {
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 14px;
+    margin-bottom: 16px;
+    text-align: center;
+
+    &--error {
+      background: #fee2e2;
+      color: #b91c1c;
+      border: 1px solid #fca5a5;
+    }
+
+    &--success {
+      background: #d1fae5;
+      color: #065f46;
+      border: 1px solid #6ee7b7;
+    }
+  }
+
+  &__form {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+
+  // ── Profile Image Upload ──────────────────────────
+  &__avatar {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+  }
+
+  &__avatar-preview {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    border: 2px dashed #d1d5db;
+    overflow: hidden;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f9fafb;
+    transition: border-color 0.2s ease;
+
+    &:hover {
+      border-color: #2563eb;
+    }
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+  }
+
+  &__avatar-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    color: #9ca3af;
+
+    span {
+      font-size: 28px;
+    }
+
+    p {
+      font-size: 11px;
+      font-weight: 500;
+    }
+  }
+
+  &__avatar-remove {
+    background: none;
+    border: none;
+    color: #ef4444;
+    font-size: 12px;
+    cursor: pointer;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 4px;
+    transition: background 0.2s ease;
+
+    &:hover {
+      background: #fee2e2;
+    }
+  }
+
+  // ── Role Selection ────────────────────────────────
+  &__role {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  &__role-label {
+    font-size: 14px;
+    font-weight: 600;
+    color: #374151;
+  }
+
+  &__role-options {
+    display: flex;
+    gap: 10px;
+  }
+
+  &__role-option {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 10px 8px;
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #6b7280;
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    input[type="radio"] {
+      display: none;
+    }
+
+    &:hover {
+      border-color: #93c5fd;
+      color: #2563eb;
+      background: #eff6ff;
+    }
+
+    &--active {
+      border-color: #2563eb;
+      background: #eff6ff;
+      color: #2563eb;
+      font-weight: 600;
+    }
+  }
+
+  // ── Footer ────────────────────────────────────────
+  &__footer {
+    margin-top: 24px;
+    text-align: center;
+    font-size: 14px;
+    color: #6b7280;
+
+    a {
+      color: #2563eb;
+      text-decoration: none;
+      font-weight: 600;
+      transition: color 0.3s ease;
+
+      &:hover {
+        color: #1d4ed8;
+        text-decoration: underline;
+      }
+    }
+  }
+}
+
+// ── Responsive ────────────────────────────────────────
+@media (max-width: 576px) {
+  .register {
+    padding: 16px;
+
+    &__card {
+      padding: 24px;
+    }
+
+    &__title {
+      font-size: 22px;
+    }
+
+    &__role-options {
+      flex-direction: column;
+    }
+  }
+}
